@@ -25,7 +25,7 @@ function onHttpStart() {
 }
 
 // the static folder that static resources, like images and css files, can load from
-app.use(express.static("./public"));
+app.use(express.static(path.join(__dirname,"/public")));
 
 // setup a 'route' to listen on the default url path (http:/ / localhost/)
 app.get("/", (req, res) => {
