@@ -27,6 +27,7 @@ function onHttpStart() {
 // the static folder that static resources, like images and css files, can load from
 app.use(express.static(path.join(__dirname,"/public")));
 
+/* ----- SERVER ROUTES ----- */
 // setup a 'route' to listen on the default url path (http:/ / localhost/)
 app.get("/", (req, res) => {
     res.redirect("/about");
@@ -37,15 +38,27 @@ app.get("/about", (req, res) => {
 });
 
 app.get("/blog", (req, res) => {
-    res.json(path.join(__dirname, "/data/posts.json"));
+    blog.getPublishedPosts().then((publishedPosts) => {
+        res.json(publishedPosts);
+    }).catch((err) => {
+        res.json({ message: err });
+    });
 });
 
 app.get("/posts", (req, res) => {
-    res.json(path.join(__dirname, "/data/posts.json"));
+    blog.getAllPosts().then((posts) => {
+        res.json(posts);
+    }).catch((err) => {
+        res.json({ message: err });
+    });
 });
     
 app.get("/categories", (req, res) => {
-    res.json(null);
+    blog.getCategories().then((categories) => {
+        res.json(categories);
+    }).catch((err) => {
+        res.json({message: err});
+    });
 });
 
 /* 
@@ -55,6 +68,14 @@ app.get((req, res) => {
     res.status(404).send("Page Not Found");
 });
 
-// setup http server to listen on HTTP_PORT
-app.listen(HTTP_PORT, onHttpStart);
+
+/* ----- CODE TO START THE SERVER ----- */
+// If data is initialized successfully in the 'blog-service' module, the promise resolves and the server is started
+blog.initialize().then(() => {
+    // setup http server to listen on HTTP_PORT
+    app.listen(HTTP_PORT, onHttpStart);
+}).catch((err) => {
+    console.log(err);
+});
+
 
