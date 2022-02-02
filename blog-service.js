@@ -6,21 +6,25 @@ var categories = [];
 
 module.exports.initialize = (() => {
     return new Promise((resolve, reject) => {
-        try {
-            fs.readFile(path.join(__dirname, "/data/posts.json"), "utf8", (err, data) => {
-                if (err) throw `ERROR: ${err}`;
+        fs.readFile(path.join(__dirname, "/data/posts.json"), "utf8", (err, data) => {
+            if (err) { 
+                reject(`ERROR: Unable to read posts.json and consequently, categories.json as well.\nSYSTEM RESPONSE: ${err}`);
+            }
+            else {
                 posts = JSON.parse(data);
 
                 fs.readFile(path.join(__dirname, "/data/categories.json"), "utf8", (err, data) => {
-                    if (err) throw `ERROR: ${err}`;
-                    categories = JSON.parse(data);
-                });
+                    if (err) {
+                        reject(`ERROR: Unable to read categories.json.\nSYSTEM RESPONSE: ${err}`);
+                    }
+                    else {
+                        categories = JSON.parse(data);
 
-                resolve();
-            });
-        } catch (err) {
-            reject(err);
-        }
+                        resolve();
+                    }                    
+                });
+            }
+        });
     });
 });
 
@@ -74,3 +78,5 @@ read().then((array) => {
     console.log(typeof (myArray));
 });
 */
+
+
