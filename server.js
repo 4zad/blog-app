@@ -25,7 +25,7 @@ function onHttpStart() {
 }
 
 // the static folder that static resources, like images and css files, can load from
-app.use(express.static(path.join(__dirname,"/public")));
+app.use(express.static(path.join(__dirname, "/public")));
 
 /* ----- SERVER ROUTES ----- */
 // setup a 'route' to listen on the default url path (http:/ / localhost/)
@@ -52,21 +52,22 @@ app.get("/posts", (req, res) => {
         res.json({ message: err });
     });
 });
-    
+
 app.get("/categories", (req, res) => {
     blog.getCategories().then((categories) => {
         res.json(categories);
     }).catch((err) => {
-        res.json({message: err});
+        res.json({ message: err });
     });
 });
 
 /* 
 This use() will not allow requests to go beyond it so we place it at the end of the file, after the other routes. This function will catch all other requests that don't match any other route handlers declared before it. This means we can use it as a sort of 'catch all' when no route match is found. We use this function to handle 404 requests to pages that are not found.
 */
-app.get((req, res) => {
-    res.status(404).send("Page Not Found");
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, "/views/not-found.html"));
 });
+
 
 
 /* ----- CODE TO START THE SERVER ----- */
