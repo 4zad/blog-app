@@ -53,6 +53,10 @@ app.get("/posts", (req, res) => {
     });
 });
 
+app.get("/posts/add", (req, res) => { 
+    res.sendFile(path.join(__dirname, "/views/add-post.html"));
+});
+
 app.get("/categories", (req, res) => {
     blog.getCategories().then((categories) => {
         res.json(categories);
