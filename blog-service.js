@@ -4,7 +4,7 @@ const path = require("path");
 var posts = [];
 var categories = [];
 
-module.exports.initialize = (() => {
+module.exports.initialize = () => {
     return new Promise((resolve, reject) => {
         fs.readFile(path.join(__dirname, "/data/posts.json"), "utf8", (err, data) => {
             if (err) { 
@@ -26,15 +26,15 @@ module.exports.initialize = (() => {
             }
         });
     });
-});
+}
 
-module.exports.getAllPosts = (() => {
+module.exports.getAllPosts = () => {
     return new Promise((resolve, reject) => {
         posts.length != 0 ? resolve(posts) : reject("ERROR: No data returned. There may not be any data to display.");
     });
-});
+}
 
-module.exports.getPublishedPosts = (() => {
+module.exports.getPublishedPosts = () => {
     return new Promise((resolve, reject) => {
         let publishedPosts = [];
 
@@ -44,14 +44,22 @@ module.exports.getPublishedPosts = (() => {
 
         publishedPosts.length != 0 ? resolve(publishedPosts) : reject("ERROR: No data returned. There may not be any data to display.");
     });
-});
+}
 
-module.exports.getCategories = (() => {
+module.exports.getCategories = () => {
     return new Promise((resolve, reject) => {
         categories.length != 0 ? resolve(categories) : reject("ERROR: No data returned. There may not be any data to display.");
     });
-});
+}
 
+module.exports.addPost = (postData) => {
+    return new Promise((resolve, reject) => {
+        postData.published = (postData.published) ? true : false;
+        postData.id = (posts.length + 1);
+        posts.push(postData);
+        resolve(posts[posts.length - 1]);
+    });
+}
 
 
 

@@ -14,18 +14,31 @@
 
 const express = require("express");
 const app = express();
+const multer = require("multer");
+const upload = multer();
+const cloudinary = require('cloudinary').v2;
+const streamifier = require('streamifier');
 const path = require("path");
 const blog = require(path.join(__dirname, "/blog-service"));
+
+cloudinary.config({
+    cloud_name: "mahmed224",
+    api_key: "737634465147813",
+    api_secret: "A1wBCHv3PWT1vOxEy9hZRYVYczU",
+    secure: true
+}); 
 
 const HTTP_PORT = process.env.PORT || 8080;
 
 // call this function after the http server starts listening for requests
-function onHttpStart() {
+const onHttpStart = () => {
     console.log(`Express http server listening on ${HTTP_PORT}`);
 }
 
 // the static folder that static resources, like images and css files, can load from
 app.use(express.static(path.join(__dirname, "/public")));
+// set the middleware for “urlencoded” form data (normal HTTP Post data)
+app.use(express.urlencoded({ extended: true }));
 
 /* ----- SERVER ROUTES ----- */
 // setup a 'route' to listen on the default url path (http:/ / localhost/)
@@ -53,7 +66,49 @@ app.get("/posts", (req, res) => {
     });
 });
 
-app.get("/posts/add", (req, res) => { 
+app.post("/posts/add", upload.single("featureImage"), (req, res) => {
+    if (req.file) {
+        let streamUpload = (req) => {
+            return new Promise((resolve, reject) => {
+                let stream = cloudinary.uploader.upload_stream(
+                    (error, result) => {
+                        if (result) {
+                            resolve(result);
+                        } else {
+                            reject(error);
+                        }
+                    }
+                );
+                streamifier.createReadStream(req.file.buffer).pipe(stream);
+            });
+        };
+
+        async function upload(req) {
+            let result = await streamUpload(req);
+            console.log(result);
+            return result;
+        };
+
+        upload(req).then((uploaded) => {
+            processPost(uploaded.url);
+        });
+
+    } else {
+        processPost("");
+    }
+
+    function processPost(imageUrl) {
+        req.body.featureImage = imageUrl;
+        // TODO: Process the req.body and add it as a new Blog Post before redirecting to /posts
+        blog.addPost(req.body).then(() => {
+            res.redirect("/posts");
+        }).catch((err) => {
+            res.send("<h1>POST COULD NOT BE MADE AT THIS TIME. PLEASE TRY AGAIN LATER</h1>");
+        });
+    };
+});
+
+app.get("/posts/add", (req, res) => {
     res.sendFile(path.join(__dirname, "/views/add-post.html"));
 });
 
