@@ -64,12 +64,12 @@ module.exports.addPost = (postData) => {
 module.exports.getPostsByCategory = (category) => {
     return new Promise((resolve, reject) => {
         let filteredPosts = [];
-        
+
         posts.forEach((post) => {
             if (post.category == category) filteredPosts.push(post);
         });
 
-        filteredPosts > 0 ? resolve(filteredPosts) : reject(`ERROR: No data returned. There may not be any data to display for the category: ${category}.`);
+        filteredPosts.length > 0 ? resolve(filteredPosts) : reject(`ERROR: No data returned. There may not be any data to display for the category: ${category}.`);
     });
 }
 
@@ -81,7 +81,7 @@ module.exports.getPostsByMinDate = (minDateStr) => {
             if (new Date(post.postDate) >= new Date(minDateStr)) filteredPosts.push(post);
         });
 
-        filteredPosts > 0 ? resolve(filteredPosts) : reject(`ERROR: No data returned. There may not be any data created after the date: ${minDateStr}.`);
+        filteredPosts.length > 0 ? resolve(filteredPosts) : reject(`ERROR: No data returned. There may not be any data created after the date: ${minDateStr}.`);
     });
 }
 
@@ -93,34 +93,8 @@ module.exports.getPostByID = (id) => {
             if (post.id == id) filteredPost.push(post);
         });
 
-        filteredPost == 1 ? resolve(filteredPost) : reject(`ERROR: No data returned. There may not be any data to display for the ID: ${id}.`);
+        filteredPost.length == 1 ? resolve(filteredPost) : reject(`ERROR: No data returned. There may not be any data to display for the ID: ${id}.`);
     });
 }
-
-
-
-// Unit testing on 'initialize' method
-/*
-const read = (() => {
-    return new Promise((resolve,reject) => {
-        fs.readFile(path.join(__dirname, "/data/categories.json"), "utf8", (err, data) => {
-            categories = JSON.parse(data);
-            resolve(categories);
-        });
-    });
-});
-
-myArray = [
-    { fName: "Fred", lName: "Flintstone" },
-    { fName: "Wilma", lName: "Flintstone" },
-    { fName: "Barney", lName: "Rubble" },
-];
-
-read().then((array) => {
-    console.log(array);
-    console.log(typeof (array));
-    console.log(typeof (myArray));
-});
-*/
 
 

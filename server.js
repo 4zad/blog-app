@@ -59,8 +59,30 @@ app.get("/blog", (req, res) => {
 });
 
 app.get("/posts", (req, res) => {
-    blog.getAllPosts().then((posts) => {
-        res.json(posts);
+    if (req.query.category) {
+        blog.getPostsByCategory(req.query.category).then((filteredPosts) => {
+            res.json(filteredPosts);
+        }).catch((err) => {
+            res.json({ message: err });
+        });
+    } else if (req.query.minDate) {
+        blog.getPostsByMinDate(req.query.minDate).then((filteredPosts) => {
+            res.json(filteredPosts);
+        }).catch((err) => {
+            res.json({ message: err });
+        });
+    } else {
+        blog.getAllPosts().then((posts) => {
+            res.json(posts);
+        }).catch((err) => {
+            res.json({ message: err });
+        });
+    }        
+});
+
+app.get("/post/:id", (req, res) => {
+    blog.getPostByID(req.params.id).then((postByID) => {
+        res.json(postByID);
     }).catch((err) => {
         res.json({ message: err });
     });
@@ -99,7 +121,7 @@ app.post("/posts/add", upload.single("featureImage"), (req, res) => {
 
     function processPost(imageUrl) {
         req.body.featureImage = imageUrl;
-        // TODO: Process the req.body and add it as a new Blog Post before redirecting to /posts
+        // processes the req.body and adds it as a new Blog Post before redirecting to /posts
         blog.addPost(req.body).then(() => {
             res.redirect("/posts");
         }).catch((err) => {
@@ -137,5 +159,6 @@ blog.initialize().then(() => {
 }).catch((err) => {
     console.log(err);
 });
+
 
 
