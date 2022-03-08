@@ -1,5 +1,5 @@
 /*********************************************************************************
-* WEB322 – Assignment 03
+* WEB322 – Assignment 04
 * I declare that this assignment is my own work in accordance with Seneca Academic 
 * Policy. No part of this assignment has been copied manually or electronically 
 * from any other source (including web sites) or distributed to other students.
@@ -14,6 +14,7 @@
 
 const express = require("express");
 const app = express();
+const exphbs = require("express-handlebars");
 const multer = require("multer");
 const upload = multer();
 const cloudinary = require('cloudinary').v2;
@@ -26,7 +27,7 @@ cloudinary.config({
     api_key: "737634465147813",
     api_secret: "A1wBCHv3PWT1vOxEy9hZRYVYczU",
     secure: true
-}); 
+});
 
 const HTTP_PORT = process.env.PORT || 8080;
 
@@ -35,19 +36,49 @@ const onHttpStart = () => {
     console.log(`Express http server listening on ${HTTP_PORT}`);
 }
 
+// tells server how to handle HTML files that are formatted using handlebars by defining any file with the “.hbs” extension (instead of “.html”) to use the handlebars “engine” (template engine)
+app.engine('.hbs', exphbs.engine({
+    extname: '.hbs',
+    helpers: {
+        navLink: function (url, options) {
+            return '<li' +
+                ((url == app.locals.activeRoute) ? ' class="active" ' : '') +
+                '><a href="' + url + '">' + options.fn(this) + '</a></li>';
+        },
+        equal: function (lvalue, rvalue, options) {
+            if (arguments.length < 3)
+                throw new Error("Handlebars Helper equal needs 2 parameters");
+            if (lvalue != rvalue) {
+                return options.inverse(this);
+            } else {
+                return options.fn(this);
+            }
+        }
+
+    }
+}));
+app.set('view engine', '.hbs');
+
 // the static folder that static resources, like images and css files, can load from
 app.use(express.static(path.join(__dirname, "/public")));
 // set the middleware for “urlencoded” form data (normal HTTP Post data)
 app.use(express.urlencoded({ extended: true }));
+// will add the property 'activeRoute' to 'app.locals' whenever the route changes, ie: if our route is '/blog/5', the app.locals.activeRoute value will be '/blog'. Also, if the blog is currently viewing a category, that category will be set in 'app.locals'.
+app.use(function (req, res, next) {
+    let route = req.path.substring(1);
+    app.locals.activeRoute = "/" + (isNaN(route.split('/')[1]) ? route.replace(/\/(?!.*)/, "") : route.replace(/\/(.*)/, ""));
+    app.locals.viewingCategory = req.query.category;
+    next();
+});
 
 /* ----- SERVER ROUTES ----- */
 // setup a 'route' to listen on the default url path (http:/ / localhost/)
 app.get("/", (req, res) => {
-    res.redirect("/about");
+    res.render("about");
 });
 
 app.get("/about", (req, res) => {
-    res.sendFile(path.join(__dirname, "/views/about.html"));
+    res.render("about");
 });
 
 app.get("/blog", (req, res) => {
@@ -77,7 +108,7 @@ app.get("/posts", (req, res) => {
         }).catch((err) => {
             res.json({ message: err });
         });
-    }        
+    }
 });
 
 app.get("/post/:id", (req, res) => {
@@ -131,7 +162,7 @@ app.post("/posts/add", upload.single("featureImage"), (req, res) => {
 });
 
 app.get("/posts/add", (req, res) => {
-    res.sendFile(path.join(__dirname, "/views/add-post.html"));
+    res.render("add-post");
 });
 
 app.get("/categories", (req, res) => {
@@ -146,7 +177,7 @@ app.get("/categories", (req, res) => {
 This use() will not allow requests to go beyond it so we place it at the end of the file, after the other routes. This function will catch all other requests that don't match any other route handlers declared before it. This means we can use it as a sort of 'catch all' when no route match is found. We use this function to handle 404 requests to pages that are not found.
 */
 app.use((req, res) => {
-    res.status(404).sendFile(path.join(__dirname, "/views/not-found.html"));
+    res.status(404).render("not-found");
 });
 
 
