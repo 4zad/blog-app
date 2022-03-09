@@ -173,9 +173,9 @@ app.get("/posts/add", (req, res) => {
 
 app.get("/categories", (req, res) => {
     blog.getCategories().then((categories) => {
-        res.json(categories);
+        res.render("categories", { categories: categories });
     }).catch((err) => {
-        res.json({ message: err });
+        res.render("categories", { message: err });
     });
 });
 
