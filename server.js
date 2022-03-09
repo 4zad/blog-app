@@ -92,21 +92,27 @@ app.get("/blog", (req, res) => {
 app.get("/posts", (req, res) => {
     if (req.query.category) {
         blog.getPostsByCategory(req.query.category).then((filteredPosts) => {
-            res.json(filteredPosts);
+            res.render("posts", {
+                posts: filteredPosts
+            });
         }).catch((err) => {
-            res.json({ message: err });
+            res.render("posts", { message: err });
         });
     } else if (req.query.minDate) {
         blog.getPostsByMinDate(req.query.minDate).then((filteredPosts) => {
-            res.json(filteredPosts);
+            res.render("posts", {
+                posts: filteredPosts
+            });
         }).catch((err) => {
-            res.json({ message: err });
+            res.render("posts", { message: err });
         });
     } else {
         blog.getAllPosts().then((posts) => {
-            res.json(posts);
+            res.render("posts", {
+                posts: posts
+            });
         }).catch((err) => {
-            res.json({ message: err });
+            res.render("posts", { message: err });
         });
     }
 });
