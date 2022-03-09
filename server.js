@@ -17,8 +17,9 @@ const app = express();
 const exphbs = require("express-handlebars");
 const multer = require("multer");
 const upload = multer();
-const cloudinary = require('cloudinary').v2;
-const streamifier = require('streamifier');
+const cloudinary = require("cloudinary").v2;
+const streamifier = require("streamifier");
+const stripJs = require("strip-js");
 const path = require("path");
 const blog = require(path.join(__dirname, "/blog-service"));
 
@@ -53,8 +54,10 @@ app.engine('.hbs', exphbs.engine({
             } else {
                 return options.fn(this);
             }
+        },
+        safeHTML: function (context) {
+            return stripJs(context);
         }
-
     }
 }));
 app.set('view engine', '.hbs');
