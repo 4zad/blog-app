@@ -98,3 +98,17 @@ module.exports.getPostByID = (id) => {
 }
 
 
+module.exports.getPublishedPostsByCategory = (category) => {
+    return new Promise((resolve, reject) => {
+        let publishedPostsByCategory = [];
+
+        posts.forEach((post) => {
+            if (post.category == category && post.published /*== true*/) publishedPostsByCategory.push(post);
+        });
+
+        publishedPostsByCategory.length > 0 ? resolve(publishedPostsByCategory) : reject("ERROR: No data returned. There may not be any data to display.");
+    });
+}
+
+
+
