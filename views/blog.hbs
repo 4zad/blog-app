@@ -1,0 +1,66 @@
+<div class="row">
+    <section class="main col-md-9">
+        {{#if data.post}}
+        <article>
+            <h2>{{data.post.title}}</h2>
+            <img src="{{data.post.featureImage}}" alt="Featured Image" style="width:100%" />
+            <br /><br />
+            {{#safeHTML data.post.body}}{{/safeHTML}}
+            <br /><br />
+            <strong>Category:</strong> {{data.post.category}}
+            <br />
+            <strong>Last Updated:</strong> {{data.post.postDate}}
+
+            <h2>{{data.message}}</h2>
+        </article>
+
+        {{else if data.message}}
+        <div class="col-md-12 text-center">
+            <h2>{{data.message}}</h2>
+            <p>Please try another Post/Category...</p>
+        </div>
+
+        {{else}}
+        <div class="col-md-12 text-center">
+            <h2>ERROR: There was a failure in the back-end operation for this route.</h2>
+            <p>Please try again at a later time...</p>
+        </div>
+        
+        {{/if}}
+    </section>
+
+    <aside class="col-md-3">
+        <br /><br />
+        {{#if data.posts}}
+        <h4>Posts</h4>
+        <ul class="list-group">
+            {{#each data.posts}}
+            <a href="/blog/{{this.id}}?category={{../viewingCategory}}" class="list-group-item">{{this.title}}</a>
+            {{/each}}
+        </ul>
+
+        {{else if data.message}}
+        <h2>{{data.message}}</h2>
+
+        {{else}}
+        <h2>ERROR: There was a failure in the back-end operation for this route request.</h2>
+        {{/if}}
+
+        {{#if data.categories}}
+        <h4>Categories</h4>
+        <ul class="list-group">
+            {{#each data.categories}}
+            <a href="/blog?category={{this.id}}" class="list-group-item">{{this.category}}</a>
+            {{/each}}
+        </ul>
+
+        {{else if data.categoriesMessage}}
+        <h2>{{data.categoriesMessage}}</h2>
+
+        {{else}}
+        <h2>ERROR: There was a failure in the back-end operation for this route request.</h2>
+        {{/if}}
+    </aside>
+</div>
+
+

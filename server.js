@@ -21,7 +21,7 @@ const cloudinary = require("cloudinary").v2;
 const streamifier = require("streamifier");
 const stripJs = require("strip-js");
 const path = require("path");
-const blog = require(path.join(__dirname, "/blog-service"));
+const blogData = require(path.join(__dirname, "/blog-service"));
 
 cloudinary.config({
     cloud_name: "mahmed224",
@@ -84,17 +84,103 @@ app.get("/about", (req, res) => {
     res.render("about");
 });
 
-app.get("/blog", (req, res) => {
-    blog.getPublishedPosts().then((publishedPosts) => {
-        res.json(publishedPosts);
-    }).catch((err) => {
-        res.json({ message: err });
-    });
+app.get('/blog', async (req, res) => {
+
+    // Declare an object to store properties for the view
+    let viewData = {};
+
+    try {
+        // declare empty array to hold "post" objects
+        let posts = [];
+
+        // if there's a "category" query, filter the returned posts by category
+        if (req.query.category) {
+            // Obtain the published "posts" by category
+            posts = await blogData.getPublishedPostsByCategory(req.query.category);
+        } else {
+            // Obtain the published "posts"
+            posts = await blogData.getPublishedPosts();
+        }
+
+        // sort the published posts by postDate
+        posts.sort((a, b) => new Date(b.postDate) - new Date(a.postDate));
+
+        // get the latest post from the front of the list (element 0)
+        let post = posts[0];
+
+        // store the "posts" and "post" data in the viewData object (to be passed to the view)
+        viewData.posts = posts;
+        viewData.post = post;
+    } catch (err) {
+        viewData.message = err;
+    }
+
+    try {
+        // Obtain the full list of "categories"
+        let categories = await blogData.getCategories();
+
+        // store the "categories" data in the viewData object (to be passed to the view)
+        viewData.categories = categories;
+    } catch (err) {
+        viewData.categoriesMessage = err;
+    }
+
+    // render the "blog" view with all of the data (viewData)
+    res.render("blog", { data: viewData })
+});
+
+app.get('/blog/:id', async (req, res) => {
+
+    // Declare an object to store properties for the view
+    let viewData = {};
+
+    try {
+        // declare empty array to hold "post" objects
+        let posts = [];
+
+        // if there's a "category" query, filter the returned posts by category
+        if (req.query.category) {
+            // Obtain the published "posts" by category
+            posts = await blogData.getPublishedPostsByCategory(req.query.category);
+        } else {
+            // Obtain the published "posts"
+            posts = await blogData.getPublishedPosts();
+        }
+
+        // sort the published posts by postDate
+        posts.sort((a, b) => new Date(b.postDate) - new Date(a.postDate));
+
+        // store the "posts" and "post" data in the viewData object (to be passed to the view)
+        viewData.posts = posts;
+
+    } catch (err) {
+        viewData.message = err;
+    }
+
+    try {
+        // Obtain the post by "id"
+        viewData.post = await blogData.getPostByID(req.params.id);
+    } catch (err) {
+        viewData.message = err;
+    }
+
+    try {
+        // Obtain the full list of "categories"
+        let categories = await blogData.getCategories();
+
+        // store the "categories" data in the viewData object (to be passed to the view)
+        viewData.categories = categories;
+    } catch (err) {
+        viewData.categoriesMessage = err;
+    }
+
+    // render the "blog" view with all of the data (viewData)
+    res.render("blog", { data: viewData })
 });
 
 app.get("/posts", (req, res) => {
     if (req.query.category) {
-        blog.getPostsByCategory(req.query.category).then((filteredPosts) => {
+        blogData.getPostsByCategory(req.query.category).then((filteredPosts) => {
             res.render("posts", {
                 posts: filteredPosts
             });
@@ -102,7 +188,7 @@ app.get("/posts", (req, res) => {
             res.render("posts", { message: err });
         });
     } else if (req.query.minDate) {
-        blog.getPostsByMinDate(req.query.minDate).then((filteredPosts) => {
+        blogData.getPostsByMinDate(req.query.minDate).then((filteredPosts) => {
             res.render("posts", {
                 posts: filteredPosts
             });
@@ -110,7 +196,7 @@ app.get("/posts", (req, res) => {
             res.render("posts", { message: err });
         });
     } else {
-        blog.getAllPosts().then((posts) => {
+        blogData.getAllPosts().then((posts) => {
             res.render("posts", {
                 posts: posts
             });
@@ -121,7 +207,7 @@ app.get("/posts", (req, res) => {
 });
 
 app.get("/post/:id", (req, res) => {
-    blog.getPostByID(req.params.id).then((postByID) => {
+    blogData.getPostByID(req.params.id).then((postByID) => {
         res.json(postByID);
     }).catch((err) => {
         res.json({ message: err });
@@ -162,7 +248,7 @@ app.post("/posts/add", upload.single("featureImage"), (req, res) => {
     function processPost(imageUrl) {
         req.body.featureImage = imageUrl;
         // processes the req.body and adds it as a new Blog Post before redirecting to /posts
-        blog.addPost(req.body).then(() => {
+        blogData.addPost(req.body).then(() => {
             res.redirect("/posts");
         }).catch((err) => {
             res.send("<h1>POST COULD NOT BE MADE AT THIS TIME. PLEASE TRY AGAIN LATER</h1>");
@@ -175,7 +261,7 @@ app.get("/posts/add", (req, res) => {
 });
 
 app.get("/categories", (req, res) => {
-    blog.getCategories().then((categories) => {
+    blogData.getCategories().then((categories) => {
         res.render("categories", { categories: categories });
     }).catch((err) => {
         res.render("categories", { message: err });
@@ -193,7 +279,7 @@ app.use((req, res) => {
 
 /* ----- CODE TO START THE SERVER ----- */
 // If data is initialized successfully in the 'blog-service' module, the promise resolves and the server is started
-blog.initialize().then(() => {
+blogData.initialize().then(() => {
     // setup http server to listen on HTTP_PORT
     app.listen(HTTP_PORT, onHttpStart);
 }).catch((err) => {
