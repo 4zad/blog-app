@@ -54,6 +54,11 @@ module.exports.getCategories = () => {
 
 module.exports.addPost = (postData) => {
     return new Promise((resolve, reject) => {
+        const today = new Date();
+        const dd = String(today.getDate()).padStart(2, '0');
+        const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+        const yyyy = today.getFullYear();
+        postData.postDate = `${yyyy}-${mm}-${dd}`; // date formatted as YYYY-MM-DD
         postData.published = (postData.published) ? true : false;
         postData.id = (posts.length + 1);
         posts.push(postData);
@@ -109,6 +114,5 @@ module.exports.getPublishedPostsByCategory = (category) => {
         publishedPostsByCategory.length > 0 ? resolve(publishedPostsByCategory) : reject("ERROR: No data returned. There may not be any data to display.");
     });
 }
-
 
 
