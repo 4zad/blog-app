@@ -77,7 +77,7 @@ app.use(function (req, res, next) {
 /* ----- SERVER ROUTES ----- */
 // setup a 'route' to listen on the default url path (http:/ / localhost/)
 app.get("/", (req, res) => {
-    res.render("about");
+    res.redirect("/blog");
 });
 
 app.get("/about", (req, res) => {
@@ -111,6 +111,8 @@ app.get('/blog', async (req, res) => {
         // store the "posts" and "post" data in the viewData object (to be passed to the view)
         viewData.posts = posts;
         viewData.post = post;
+        // console.log(viewData.posts); // test to see if the correct posts is being returned in "posts" array
+        // console.log(viewData.post); // test to see if the first post is being returned
     } catch (err) {
         viewData.message = err;
     }
@@ -150,16 +152,17 @@ app.get('/blog/:id', async (req, res) => {
         // sort the published posts by postDate
         posts.sort((a, b) => new Date(b.postDate) - new Date(a.postDate));
 
-        // store the "posts" and "post" data in the viewData object (to be passed to the view)
+        // store the "posts" data in the viewData object (to be passed to the view)
         viewData.posts = posts;
-
+        // console.log(viewData.posts); // test to see if the correct posts is being returned in "posts" array
     } catch (err) {
         viewData.message = err;
     }
 
     try {
-        // Obtain the post by "id"
+        // Obtain the post by "id" and store the post in the viewData object (to be passed to the view)
         viewData.post = await blogData.getPostByID(req.params.id);
+        // console.log(viewData.post); // test to see if the correct post is being returned
     } catch (err) {
         viewData.message = err;
     }
