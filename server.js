@@ -128,7 +128,7 @@ app.get('/blog', async (req, res) => {
     }
 
     // render the "blog" view with all of the data (viewData)
-    res.render("blog", { data: viewData })
+    res.render("blog", { data: viewData });
 });
 
 app.get('/blog/:id', async (req, res) => {
@@ -178,7 +178,7 @@ app.get('/blog/:id', async (req, res) => {
     }
 
     // render the "blog" view with all of the data (viewData)
-    res.render("blog", { data: viewData })
+    res.render("blog", { data: viewData });
 });
 
 app.get("/posts", (req, res) => {

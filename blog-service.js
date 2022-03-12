@@ -92,13 +92,13 @@ module.exports.getPostsByMinDate = (minDateStr) => {
 
 module.exports.getPostByID = (id) => {
     return new Promise((resolve, reject) => {
-        let filteredPost = [];
+        let filteredPost = {}; // '{}' used instead of '[]' because we want 'filteredPost' to return a single object, not an array of objects
 
         posts.forEach((post) => {
-            if (post.id == id) filteredPost.push(post);
+            if (post.id == id) filteredPost = post;
         });
 
-        filteredPost.length == 1 ? resolve(filteredPost) : reject(`ERROR: No data returned. There may not be any data to display for the ID: ${id}.`);
+        filteredPost ? resolve(filteredPost) : reject(`ERROR: No data returned. There may not be any data to display for the ID: ${id}.`);
     });
 }
 
