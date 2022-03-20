@@ -41,6 +41,13 @@ const onHttpStart = () => {
 app.engine('.hbs', exphbs.engine({
     extname: '.hbs',
     helpers: {
+        formatDate: function (dateObj) {
+            let year = dateObj.getFullYear();
+            let month = (dateObj.getMonth() + 1).toString();
+            let day = dateObj.getDate().toString();
+            
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        },
         navLink: function (url, options) {
             return '<li' +
                 ((url == app.locals.activeRoute) ? ' class="active" ' : '') +
