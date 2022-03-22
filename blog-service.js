@@ -47,6 +47,52 @@ module.exports.initialize = () => {
     });
 }
 
+module.exports.getCategories = () => {
+    return new Promise((resolve, reject) => {
+        Category.findAll().then((allCategories) => {
+            resolve(allCategories);
+        }).catch((err) => {
+            reject(`ERROR: No data returned. There may not be any data to display.`);
+        });
+    });
+}
+
+module.exports.addCategory = (categoryData) => {
+    return new Promise((resolve, reject) => {
+        // ensuring that any blank values ("") for properties of 'categoryData' are set to null
+        for (const property in categoryData) {
+            if (categoryData[property] == "") {
+                categoryData[property] = null;
+            }
+        }
+        
+        Category.create({
+            category: categoryData.category
+        }).then((createdCategory) => {
+            // you can now access the newly created Project via the variable project
+            resolve(`SUCCESS: The following category has been received and uploaded to the database successfully:\n${createdCategory}`);
+        }).catch((error) => {
+            console.log(`ERROR: An error occurred while attempting to create and upload the recieved category to the database. The following error message was returned:\n${error}`);
+        });
+    });
+}
+
+module.exports.deleteCategoryByID = (id) => {
+    return new Promise((resolve, reject) => {
+        Category.destroy({
+            where: {
+                id: id // only remove category with specified id
+                    // more attribute-value pairs can be added to the where clause if necessary 
+            } 
+        }).then(() =>
+        {
+            resolve(`SUCCESS: The specified category, with the id '${id}', has been deleted/destroyed.`);
+        }).catch((err) => {
+            reject(`ERROR: The specified category, with the id '${id}', could not be deleted/destroyed successfully.`);
+        });
+    });
+}
+
 module.exports.getAllPosts = () => {
     return new Promise((resolve, reject) => {
         Post.findAll().then((allPosts) => {
@@ -71,16 +117,6 @@ module.exports.getPublishedPosts = () => {
     });
 }
 
-module.exports.getCategories = () => {
-    return new Promise((resolve, reject) => {
-        Category.findAll().then((allCategories) => {
-            resolve(allCategories);
-        }).catch((err) => {
-            reject(`ERROR: No data returned. There may not be any data to display.`);
-        });
-    });
-}
-
 module.exports.addPost = (postData) => {
     return new Promise((resolve, reject) => {
         // ensuring that the 'postDate' property of 'postData' is set to the current date by creating a new 'Date' object
@@ -101,11 +137,11 @@ module.exports.addPost = (postData) => {
             postDate: postData.postDate,
             featureImage: postData.featureImage,
             published: postData.published
-        }).then(function (createdPost) {
+        }).then((createdPost) => {
             // you can now access the newly created Project via the variable project
             resolve(`SUCCESS: The following post has been received and uploaded to the database successfully:\n${createdPost}`);
-        }).catch(function (error) {
-            console.log(`ERROR: An error occurred while attempting to upload the recieved post to the database. The following post could not be uploaded to the database successfully:\n${createdPost}`);
+        }).catch((error) => {
+            console.log(`ERROR: An error occurred while attempting to create and upload the recieved post to the database. The following error message was returned:\n${error}`);
         });
     });
 }
@@ -172,5 +208,21 @@ module.exports.getPublishedPostsByCategory = (category) => {
         });
     });
 }
+
+module.exports.deletePostByID = (id) => {
+    return new Promise((resolve, reject) => {
+        Post.destroy({
+            where: {
+                id: id // only remove post with specified id
+                // more attribute-value pairs can be added to the where clause if necessary 
+            }
+        }).then(() => {
+            resolve(`SUCCESS: The specified post, with the id '${id}', has been deleted/destroyed.`);
+        }).catch((err) => {
+            reject(`ERROR: The specified post, with the id '${id}', could not be deleted/destroyed successfully.`);
+        });
+    });
+}
+
 
 
