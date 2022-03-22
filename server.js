@@ -297,7 +297,16 @@ app.post("/posts/add", upload.single("featureImage"), (req, res) => {
 });
 
 app.get("/posts/add", (req, res) => {
-    res.render("add-post");
+    blogData.getCategories().then((categories) => {
+        res.render("add-post", {
+            categories: categories
+        });
+    }).catch((err) => {
+        console.log(err);
+        res.render("add-post", {
+            categories: []
+        });
+    });
 });
 
 app.get("/posts/delete/:id", (req, res) => {
