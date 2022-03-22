@@ -72,10 +72,12 @@ module.exports.getPublishedPosts = () => {
 }
 
 module.exports.getCategories = () => {
-    Category.findAll().then((allCategories) => {
-        resolve(allCategories);
-    }).catch((err) => {
-        reject(`ERROR: No data returned. There may not be any data to display.`);
+    return new Promise((resolve, reject) => {
+        Category.findAll().then((allCategories) => {
+            resolve(allCategories);
+        }).catch((err) => {
+            reject(`ERROR: No data returned. There may not be any data to display.`);
+        });
     });
 }
 
