@@ -287,7 +287,7 @@ app.post("/posts/add", upload.single("featureImage"), (req, res) => {
 
     function processPost(imageUrl) {
         req.body.featureImage = imageUrl;
-        // processes the req.body and adds it as a new Blog Post before redirecting to /posts
+        // processes the req.body and adds it as a new Blog Post before redirecting to '/posts'
         blogData.addPost(req.body).then(() => {
             res.redirect("/posts");
         }).catch((err) => {
@@ -300,6 +300,16 @@ app.get("/posts/add", (req, res) => {
     res.render("add-post");
 });
 
+app.get("/posts/delete/:id", (req, res) => {
+    blogData.deletePostByID(req.params.id).then((msg) => {
+        console.log(msg);
+        res.redirect("/posts");
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send(`Unable to remove the specified post, with the id '${req.params.id}'. The specified post may not exist.`);
+    });
+});
+
 app.get("/categories", (req, res) => {
     blogData.getCategories().then((categories) => {
         if (categories.length > 0) {
@@ -310,11 +320,34 @@ app.get("/categories", (req, res) => {
             res.render("categories", {
                 message: `NOTE: No categories exist.`
             });
-        } 
+        }
     }).catch((err) => {
         res.render("categories", {
             message: err
         });
+    });
+});
+
+app.post("/categories/add", upload.single("featureImage"), (req, res) => {
+    // processes the req.body and adds it as a new Blog Post before redirecting to '/categories'
+    blogData.addPost(req.body).then(() => {
+        res.redirect("/categories");
+    }).catch((err) => {
+        res.send("<h1>CATEGORY COULD NOT BE MADE AT THIS TIME. PLEASE TRY AGAIN LATER</h1>");
+    });
+});
+
+app.get("/categories/add", (req, res) => {
+    res.render("add-category");
+});
+
+app.get("/categories/delete/:id", (req, res) => {
+    blogData.deleteCategoryByID(req.params.id).then((msg) => {
+        console.log(msg);
+        res.redirect("/categories");
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send(`Unable to remove the specified category, with the id '${req.params.id}'. The specified category may not exist.`);
     });
 });
 
