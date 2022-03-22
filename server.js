@@ -45,7 +45,7 @@ app.engine('.hbs', exphbs.engine({
             let year = dateObj.getFullYear();
             let month = (dateObj.getMonth() + 1).toString();
             let day = dateObj.getDate().toString();
-            
+
             return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
         },
         navLink: function (url, options) {
@@ -135,7 +135,9 @@ app.get('/blog', async (req, res) => {
     }
 
     // render the "blog" view with all of the data (viewData)
-    res.render("blog", { data: viewData });
+    res.render("blog", {
+        data: viewData
+    });
 });
 
 app.get('/blog/:id', async (req, res) => {
@@ -185,33 +187,59 @@ app.get('/blog/:id', async (req, res) => {
     }
 
     // render the "blog" view with all of the data (viewData)
-    res.render("blog", { data: viewData });
+    res.render("blog", {
+        data: viewData
+    });
 });
 
 app.get("/posts", (req, res) => {
     if (req.query.category) {
         blogData.getPostsByCategory(req.query.category).then((filteredPosts) => {
-            res.render("posts", {
-                posts: filteredPosts
-            });
+            if (filteredPosts.length > 0) {
+                res.render("posts", {
+                    posts: filteredPosts
+                });
+            } else {
+                res.render("posts", {
+                    message: `NOTE: No posts exist for the specified category.`
+                });
+            }
         }).catch((err) => {
-            res.render("posts", { message: err });
+            res.render("posts", {
+                message: err
+            });
         });
     } else if (req.query.minDate) {
         blogData.getPostsByMinDate(req.query.minDate).then((filteredPosts) => {
-            res.render("posts", {
-                posts: filteredPosts
-            });
+            if (filteredPosts.length > 0) {
+                res.render("posts", {
+                    posts: filteredPosts
+                });
+            } else {
+                res.render("posts", {
+                    message: `NOTE: No posts exist for the specified minimum upload date.`
+                });
+            }
         }).catch((err) => {
-            res.render("posts", { message: err });
+            res.render("posts", {
+                message: err
+            });
         });
     } else {
         blogData.getAllPosts().then((posts) => {
-            res.render("posts", {
-                posts: posts
-            });
+            if (posts.length > 0) {
+                res.render("posts", {
+                    posts: posts
+                });
+            } else {
+                res.render("posts", {
+                    message: `NOTE: No posts exist.`
+                });
+            }
         }).catch((err) => {
-            res.render("posts", { message: err });
+            res.render("posts", {
+                message: err
+            });
         });
     }
 });
@@ -220,7 +248,9 @@ app.get("/post/:id", (req, res) => {
     blogData.getPostByID(req.params.id).then((postByID) => {
         res.json(postByID);
     }).catch((err) => {
-        res.json({ message: err });
+        res.json({
+            message: err
+        });
     });
 });
 
@@ -272,9 +302,19 @@ app.get("/posts/add", (req, res) => {
 
 app.get("/categories", (req, res) => {
     blogData.getCategories().then((categories) => {
-        res.render("categories", { categories: categories });
+        if (categories.length > 0) {
+            res.render("categories", {
+                categories: categories
+            });
+        } else {
+            res.render("categories", {
+                message: `NOTE: No categories exist.`
+            });
+        } 
     }).catch((err) => {
-        res.render("categories", { message: err });
+        res.render("categories", {
+            message: err
+        });
     });
 });
 
