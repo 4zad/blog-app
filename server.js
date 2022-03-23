@@ -315,7 +315,8 @@ app.get("/posts/delete/:id", (req, res) => {
         res.redirect("/posts");
     }).catch((err) => {
         console.log(err);
-        res.status(500).send(`Unable to remove the specified post, with the id '${req.params.id}'. The specified post may not exist.`);
+        // res.status(500).send(`Unable to remove the specified post, with the id '${req.params.id}'. The specified post may not exist.`);
+        res.status(500).send(`Unable to Remove Post / Post not found)`);
     });
 });
 
@@ -356,7 +357,8 @@ app.get("/categories/delete/:id", (req, res) => {
         res.redirect("/categories");
     }).catch((err) => {
         console.log(err);
-        res.status(500).send(`Unable to remove the specified category, with the id '${req.params.id}'. The specified category may not exist.`);
+        // res.status(500).send(`Unable to remove the specified category, with the id '${req.params.id}'. The specified category may not exist.`);
+        res.status(500).send(`Unable to Remove Category / Category not found)`);
     });
 });
 

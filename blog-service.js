@@ -50,9 +50,13 @@ module.exports.initialize = () => {
 module.exports.getCategories = () => {
     return new Promise((resolve, reject) => {
         Category.findAll().then((allCategories) => {
-            resolve(allCategories);
+            if (allCategories.length > 0) {
+                resolve(allCategories);
+            } else {
+                reject(`NOTE: No data returned. There may not be any data to display.`);
+            }
         }).catch((err) => {
-            reject(`ERROR: No data returned. There may not be any data to display.`);
+            reject(`ERROR: No data returned. There may have been a problem in the back-end process.`);
         });
     });
 }
@@ -96,9 +100,13 @@ module.exports.deleteCategoryByID = (id) => {
 module.exports.getAllPosts = () => {
     return new Promise((resolve, reject) => {
         Post.findAll().then((allPosts) => {
-            resolve(allPosts);
+            if (allPosts.length > 0) {
+                resolve(allPosts);
+            } else {
+                reject(`NOTE: No data returned. There may not be any data to display.`);
+            }
         }).catch((err) => {
-            reject(`ERROR: No data returned. There may not be any data to display.`);
+            reject(`ERROR: No data returned. There may have been a problem in the back-end process.`);
         });
     });
 }
@@ -110,9 +118,13 @@ module.exports.getPublishedPosts = () => {
                 published: true
             }
         }).then((filteredPosts) => {
-            resolve(filteredPosts);
+            if (filteredPosts.length > 0) {
+                resolve(filteredPosts);
+            } else {
+                reject(`NOTE: No data returned. There may not be any published data to display.`);
+            }
         }).catch((err) => {
-            reject(`ERROR: No data returned. There may not be any published data to display.`);
+            reject(`ERROR: No data returned. There may have been a problem in the back-end process.`);
         });
     });
 }
@@ -153,7 +165,11 @@ module.exports.getPostsByCategory = (category) => {
                 category: category
             }
         }).then((filteredPosts) => {
-            resolve(filteredPosts);
+            if (filteredPosts.length > 0) {
+                resolve(filteredPosts);
+            } else {
+                reject(`NOTE: No data returned. There may not be any data to display for the category: ${category}.`);
+            }
         }).catch((err) => {
             reject(`ERROR: No data returned. There may not be any data to display for the category: ${category}.`);
         });
@@ -171,7 +187,11 @@ module.exports.getPostsByMinDate = (minDateStr) => {
                 }
             }
         }).then((filteredPosts) => {
-            resolve(filteredPosts);
+            if (filteredPosts.length > 0) {
+                resolve(filteredPosts);
+            } else {
+                reject(`NOTE: No data returned. There may not be any data created after the date: ${minDateStr}.`);
+            } 
         }).catch((err) => {
             reject(`ERROR: No data returned. There may not be any data created after the date: ${minDateStr}.`);
         });
@@ -185,8 +205,12 @@ module.exports.getPostByID = (id) => {
                 id: id
             }
         }).then((filteredPost) => { 
-            resolve(filteredPost[0]); // the 'findAll' method will always return an array and since this method, 'getPostByID', will always only return a single object, we want to ensure that a single object is returned and not an array of objects that only has one element
-            // typically in such a situation, '{}' is used instead of '[]' because this will define a variable as a single object, rather than an array of objects
+            if (filteredPosts.length > 0) {
+                resolve(filteredPost[0]); // the 'findAll' method will always return an array and since this method, 'getPostByID', will always only return a single object, we want to ensure that a single object is returned and not an array of objects that only has one element
+                // typically in such a situation, '{}' is used instead of '[]' because this will define a variable as a single object, rather than an array of objects
+            } else {
+                reject(`NOTE: No data returned. There may not be any data to display for the ID: ${id}.`);
+            }
         }).catch((err) => {
             reject(`ERROR: No data returned. There may not be any data to display for the ID: ${id}.`);
         });
@@ -202,7 +226,11 @@ module.exports.getPublishedPostsByCategory = (category) => {
                 category: category
             }
         }).then((filteredPosts) => {
-            resolve(filteredPosts);
+            if (filteredPosts.length > 0) {
+                resolve(filteredPosts);
+            } else {
+                reject(`NOTE: No data returned. There may not be any published data to display for the category: ${category}.`);
+            } 
         }).catch((err) => {
             reject(`ERROR: No data returned. There may not be any published data to display for the category: ${category}.`);
         });
