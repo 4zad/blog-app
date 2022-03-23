@@ -134,21 +134,22 @@ module.exports.addPost = (postData) => {
         // ensuring that the 'postDate' property of 'postData' is set to the current date by creating a new 'Date' object
         postData.postDate = new Date();
         // ensuring that the 'published' property of 'postData' is set to a proper boolean value (rather than whatever the form checkbox defined it to be)
-        postData.published = (postData.published) ? true : false;
+        // postData.published = (postData.published) ? true : false;
         // ensuring that any blank values ("") for properties of 'postData' are set to null
         for (const property in postData) {
             if (postData[property] == "") {
                 postData[property] = null;
             }
         }
-
+        
         // creating a new entry and uploading 'postData' into the postgresql database
         Post.create({
             body: postData.body,
             title: postData.title,
             postDate: postData.postDate,
             featureImage: postData.featureImage,
-            published: postData.published
+            published: postData.published ? true : false, // ensuring that the 'published' property of 'postData' is set to a proper boolean value
+            category: postData.category
         }).then((createdPost) => {
             // you can now access the newly created Project via the variable project
             resolve(`SUCCESS: The following post has been received and uploaded to the database successfully:\n${createdPost}`);
@@ -171,7 +172,7 @@ module.exports.getPostsByCategory = (category) => {
                 reject(`NOTE: No data returned. There may not be any data to display for the category: ${category}.`);
             }
         }).catch((err) => {
-            reject(`ERROR: No data returned. There may not be any data to display for the category: ${category}.`);
+            reject(`ERROR: No data returned. There may have been a problem in the back-end process.`);
         });
     });
 }
@@ -193,7 +194,7 @@ module.exports.getPostsByMinDate = (minDateStr) => {
                 reject(`NOTE: No data returned. There may not be any data created after the date: ${minDateStr}.`);
             } 
         }).catch((err) => {
-            reject(`ERROR: No data returned. There may not be any data created after the date: ${minDateStr}.`);
+            reject(`ERROR: No data returned. There may have been a problem in the back-end process.`);
         });
     });
 }
@@ -205,14 +206,14 @@ module.exports.getPostByID = (id) => {
                 id: id
             }
         }).then((filteredPost) => { 
-            if (filteredPosts.length > 0) {
+            if (filteredPost.length > 0) {
                 resolve(filteredPost[0]); // the 'findAll' method will always return an array and since this method, 'getPostByID', will always only return a single object, we want to ensure that a single object is returned and not an array of objects that only has one element
                 // typically in such a situation, '{}' is used instead of '[]' because this will define a variable as a single object, rather than an array of objects
             } else {
                 reject(`NOTE: No data returned. There may not be any data to display for the ID: ${id}.`);
             }
         }).catch((err) => {
-            reject(`ERROR: No data returned. There may not be any data to display for the ID: ${id}.`);
+            reject(`ERROR: No data returned. There may have been a problem in the back-end process.`);
         });
     });
 }
@@ -232,7 +233,7 @@ module.exports.getPublishedPostsByCategory = (category) => {
                 reject(`NOTE: No data returned. There may not be any published data to display for the category: ${category}.`);
             } 
         }).catch((err) => {
-            reject(`ERROR: No data returned. There may not be any published data to display for the category: ${category}.`);
+            reject(`ERROR: No data returned. There may have been a problem in the back-end process..`);
         });
     });
 }
@@ -251,6 +252,7 @@ module.exports.deletePostByID = (id) => {
         });
     });
 }
+
 
 
 

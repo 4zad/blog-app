@@ -340,7 +340,7 @@ app.get("/categories", (req, res) => {
 
 app.post("/categories/add", upload.single("featureImage"), (req, res) => {
     // processes the req.body and adds it as a new Blog Post before redirecting to '/categories'
-    blogData.addPost(req.body).then(() => {
+    blogData.addCategory(req.body).then(() => {
         res.redirect("/categories");
     }).catch((err) => {
         res.send("<h1>CATEGORY COULD NOT BE MADE AT THIS TIME. PLEASE TRY AGAIN LATER</h1>");
@@ -379,6 +379,7 @@ blogData.initialize().then(() => {
 }).catch((err) => {
     console.log(err);
 });
+
 
 
 

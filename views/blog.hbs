@@ -3,8 +3,11 @@
         {{#if data.post}}
         <article>
             <h2>{{data.post.title}}</h2>
+            {{#if data.post.featureImage}}
             <img src="{{data.post.featureImage}}" alt="Featured Image" style="width:100%" />
-            <br /><br />
+            <br />
+            {{/if}}
+            <br />
             {{#safeHTML data.post.body}}{{/safeHTML}}
             <br /><br />
             <strong>Category:</strong> {{data.post.category}}
@@ -60,5 +63,6 @@
         {{/if}}
     </aside>
 </div>
+
 
 
