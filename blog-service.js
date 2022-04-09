@@ -137,7 +137,7 @@ module.exports.addPost = (postData) => {
         // postData.published = (postData.published) ? true : false;
         // ensuring that any blank values ("") for properties of 'postData' are set to null
         for (const property in postData) {
-            if (postData[property] == "") {
+            if (postData[property] === "") {
                 postData[property] = null;
             }
         }

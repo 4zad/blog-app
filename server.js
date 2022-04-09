@@ -1,15 +1,14 @@
 /*********************************************************************************
-* WEB322 – Assignment 05
+* WEB322 – Assignment 06
 * I declare that this assignment is my own work in accordance with Seneca Academic 
 * Policy. No part of this assignment has been copied manually or electronically 
 * from any other source (including web sites) or distributed to other students.
 *
 * Name: Muhammad Ahmed Student 
 * ID: 146908207 
-* Date: 03-22-2022
+* Date: 04-08-2022
 *
 * Online (Heroku) URL: https://morning-shelf-22133.herokuapp.com/
-*
 ********************************************************************************/
 
 const express = require("express");
@@ -22,6 +21,7 @@ const streamifier = require("streamifier");
 const stripJs = require("strip-js");
 const path = require("path");
 const blogData = require(path.join(__dirname, "/blog-service"));
+const authData = require(path.join(__dirname, "/auth-service"));
 
 cloudinary.config({
     cloud_name: "mahmed224",
