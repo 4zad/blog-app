@@ -40,7 +40,7 @@ module.exports.initialize = () => {
     return new Promise((resolve, reject) => {
         // synchronize the database, defined in 'sequelize' with our models and automatically create/add the table(s) that don't exist in the database, to the database
         sequelize.sync().then(() => {
-            resolve(`SUCCESS: The operation succeeded. The Database as been synchronized.`);
+            resolve(`SUCCESS: The operation succeeded. The database as been synchronized.`);
         }).catch((err) => {
             reject(`ERROR: An unexpected and unknown error occurred. Unable to synchronize with the database successfully.\nSYSTEM RESPONSE: ${err}`);
         });
