@@ -18,6 +18,7 @@ const multer = require("multer");
 const upload = multer();
 const cloudinary = require("cloudinary").v2;
 const streamifier = require("streamifier");
+const clientSessions = require("client-sessions");
 const stripJs = require("strip-js");
 const path = require("path");
 const blogData = require(path.join(__dirname, "/blog-service"));
@@ -74,12 +75,36 @@ app.use(express.static(path.join(__dirname, "/public")));
 // set the middleware for “urlencoded” form data (normal HTTP Post data)
 app.use(express.urlencoded({ extended: true }));
 // will add the property 'activeRoute' to 'app.locals' whenever the route changes, ie: if our route is '/blog/5', the app.locals.activeRoute value will be '/blog'. Also, if the blog is currently viewing a category, that category will be set in 'app.locals'.
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
     let route = req.path.substring(1);
     app.locals.activeRoute = "/" + (isNaN(route.split('/')[1]) ? route.replace(/\/(?!.*)/, "") : route.replace(/\/(.*)/, ""));
     app.locals.viewingCategory = req.query.category;
     next();
 });
+// Setup client-sessions
+app.use(clientSessions({
+    cookieName: "session", // this is the object name that will be added to 'req'
+    secret: "sacrifice_earth_crow_risk_electrification_telepathy", // this should be a long un-guessable string.
+    duration: 5 * 60 * 1000, // duration of the session in milliseconds (5 minutes)
+    activeDuration: 3 * 1000 * 60 // the session will be extended by this many milliseconds, after each request made (3 minutes)
+}));
+app.use((req, res, next) => {
+    res.locals.session = req.session;
+    next();
+});
+
+// This is a helper middleware function that checks if a user is logged in
+// Can be used in any route that should be protected against unauthenticated access
+// A more advanced version of this would include checks for authorization as well, after checking if the user is authenticated
+const ensureLogin = (req, res, next) => {
+    if (!req.session.user) {
+        res.redirect("/login");
+    } else {
+        next();
+    }
+}
+
+
 
 /* ----- SERVER ROUTES ----- */
 // setup a 'route' to listen on the default url path (http:/ / localhost/)
@@ -192,7 +217,7 @@ app.get('/blog/:id', async (req, res) => {
     });
 });
 
-app.get("/posts", (req, res) => {
+app.get("/posts", ensureLogin, (req, res) => {
     if (req.query.category) {
         blogData.getPostsByCategory(req.query.category).then((filteredPosts) => {
             if (filteredPosts.length > 0) {
@@ -244,7 +269,7 @@ app.get("/posts", (req, res) => {
     }
 });
 
-app.get("/post/:id", (req, res) => {
+app.get("/post/:id", ensureLogin, (req, res) => {
     blogData.getPostByID(req.params.id).then((postByID) => {
         res.json(postByID);
     }).catch((err) => {
@@ -254,7 +279,7 @@ app.get("/post/:id", (req, res) => {
     });
 });
 
-app.post("/posts/add", upload.single("featureImage"), (req, res) => {
+app.post("/posts/add", ensureLogin, upload.single("featureImage"), (req, res) => {
     if (req.file) {
         let streamUpload = (req) => {
             return new Promise((resolve, reject) => {
@@ -296,7 +321,7 @@ app.post("/posts/add", upload.single("featureImage"), (req, res) => {
     };
 });
 
-app.get("/posts/add", (req, res) => {
+app.get("/posts/add", ensureLogin, (req, res) => {
     blogData.getCategories().then((categories) => {
         res.render("add-post", {
             categories: categories
@@ -309,7 +334,7 @@ app.get("/posts/add", (req, res) => {
     });
 });
 
-app.get("/posts/delete/:id", (req, res) => {
+app.get("/posts/delete/:id", ensureLogin, (req, res) => {
     blogData.deletePostByID(req.params.id).then((msg) => {
         console.log(msg);
         res.redirect("/posts");
@@ -320,7 +345,7 @@ app.get("/posts/delete/:id", (req, res) => {
     });
 });
 
-app.get("/categories", (req, res) => {
+app.get("/categories", ensureLogin, (req, res) => {
     blogData.getCategories().then((categories) => {
         if (categories.length > 0) {
             res.render("categories", {
@@ -338,7 +363,7 @@ app.get("/categories", (req, res) => {
     });
 });
 
-app.post("/categories/add", upload.single("featureImage"), (req, res) => {
+app.post("/categories/add", ensureLogin, upload.single("featureImage"), (req, res) => {
     // processes the req.body and adds it as a new Blog Post before redirecting to '/categories'
     blogData.addCategory(req.body).then(() => {
         res.redirect("/categories");
@@ -347,11 +372,11 @@ app.post("/categories/add", upload.single("featureImage"), (req, res) => {
     });
 });
 
-app.get("/categories/add", (req, res) => {
+app.get("/categories/add", ensureLogin, (req, res) => {
     res.render("add-category");
 });
 
-app.get("/categories/delete/:id", (req, res) => {
+app.get("/categories/delete/:id", ensureLogin, (req, res) => {
     blogData.deleteCategoryByID(req.params.id).then((msg) => {
         console.log(msg);
         res.redirect("/categories");
@@ -361,6 +386,8 @@ app.get("/categories/delete/:id", (req, res) => {
         res.status(500).send(`Unable to Remove Category / Category not found)`);
     });
 });
+
+
 
 /* 
 This use() will not allow requests to go beyond it so we place it at the end of the file, after the other routes. This function will catch all other requests that don't match any other route handlers declared before it. This means we can use it as a sort of 'catch all' when no route match is found. We use this function to handle 404 requests to pages that are not found.
@@ -373,14 +400,16 @@ app.use((req, res) => {
 
 /* ----- CODE TO START THE SERVER ----- */
 // If data is initialized successfully in the 'blog-service' module, the promise resolves and the server is started
-blogData.initialize().then(authData.initialize().then(() => {
-    // setup http server to listen on HTTP_PORT
-    app.listen(HTTP_PORT, onHttpStart);
-}).catch((err) => {
-    console.log(`ERROR: Unable to start server. The system has responded with: \n${err}`);
-})).catch((err) => {
-    console.log(`ERROR: Unable to start server. The system has responded with: \n${err}`);
-});
+blogData.initialize()
+    .then(authData.initialize())
+    .then(() => {
+        // setup http server to listen on HTTP_PORT
+        app.listen(HTTP_PORT, onHttpStart);
+    })
+    .catch((err) => {
+        console.log(`ERROR: Unable to start server. The system has responded with: \n${err}`);
+    });
+
 
 
 
