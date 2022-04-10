@@ -63,7 +63,7 @@ module.exports.registerUser = (userData) => {
                             reject(`ERROR: The user could not be created. The following error occurred: \n${err}`);
                         }
                     } else {
-                        resolve(`SUCCESS: The following user was successfully created: \n${newUserData}`);
+                        resolve(`SUCCESS: The following user was successfully created: ${newUserData.username}, ${newUserData.email}.`);
                     }
                 });
             }).catch(err => {
@@ -84,7 +84,7 @@ module.exports.checkUser = (userData) => {
                 bcrypt.compare(userData.password, users[0].password).then((match) => {
                     if (match === false) {
                         reject(`ERROR: Incorrect password for user '${userData.username}'.`);
-                    } else if (res === true) {
+                    } else if (match === true) {
                         if (users[0].loginHistory == null) {
                             users[0].loginHistory = [];
                         }
@@ -98,13 +98,11 @@ module.exports.checkUser = (userData) => {
                             $set: {
                                 loginHistory: users[0].loginHistory
                             }
-                        }).exec()
-                            .then(() => {
-                                resolve(users[0]);
-                            })
-                            .catch((err) => {
-                                reject(`ERROR: Could not verify user. The following error was returned: \n${err}`);
-                            });
+                        }).exec().then(() => {
+                            resolve(users[0]);
+                        }).catch((err) => {
+                            reject(`ERROR: Could not verify user. The following error was returned: \n${err}`);
+                        });
                     }
                 });
             }
