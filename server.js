@@ -373,11 +373,13 @@ app.use((req, res) => {
 
 /* ----- CODE TO START THE SERVER ----- */
 // If data is initialized successfully in the 'blog-service' module, the promise resolves and the server is started
-blogData.initialize().then(() => {
+blogData.initialize().then(authData.initialize().then(() => {
     // setup http server to listen on HTTP_PORT
     app.listen(HTTP_PORT, onHttpStart);
 }).catch((err) => {
-    console.log(err);
+    console.log(`ERROR: Unable to start server. The system has responded with: \n${err}`);
+})).catch((err) => {
+    console.log(`ERROR: Unable to start server. The system has responded with: \n${err}`);
 });
 
 

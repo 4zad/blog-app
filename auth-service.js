@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const bcrypt = require('bcryptjs');
 
 // schema to define a user account 
 let userSchema = new Schema({
@@ -46,22 +47,27 @@ module.exports.registerUser = (userData) => {
         if (userData.password != userData.password2) {
             reject(`ERROR: Passwords do not match.`);
         } else {
-            let newUser = new User({
-                username: userData.username,
-                password: userData.password,
-                email: userData.email
-            });
+            bcrypt.hash(userData.password, 10).then((hash) => { // Hash the password using a Salt that was generated using 10 rounds
+                let newUser = new User({
+                    username: userData.username,
+                    password: hash,
+                    email: userData.email,
+                    loginHistory: []
+                });
 
-            newUser.save((err, newUserData) => {
-                if (err) {
-                    if (err == 11000) {
-                        reject(`ERROR: The username '${newUserData.username}' is already taken.`);
+                newUser.save((err, newUserData) => {
+                    if (err) {
+                        if (err == 11000) {
+                            reject(`ERROR: The username '${newUserData.username}' is already taken.`);
+                        } else {
+                            reject(`ERROR: The user could not be created. The following error occurred: \n${err}`);
+                        }
                     } else {
-                        reject(`ERROR: The user could not be created. The following error occurred: \n${err}`);
+                        resolve(`SUCCESS: The following user was successfully created: \n${newUserData}`);
                     }
-                } else {
-                    resolve(`SUCCESS: The following user was successfully created: \n${newUserData}`);
-                }
+                });
+            }).catch(err => {
+                reject(`ERROR: Could not encrypt password. The following error was returned: \n${err}`);
             });
         }
     });
@@ -73,11 +79,11 @@ module.exports.checkUser = (userData) => {
             username: userData.username
         }).exec().then((users) => {
             if (users.length == 0) {
-                reject(`ERROR: Unable to find user, '${userData.username}'.`);
+                reject(`ERROR: Unable to find user '${userData.username}'.`);
             } else {
-                bcrypt.compare(users[0].password, userData.password, (err, match) => {
+                bcrypt.compare(userData.password, users[0].password).then((match) => {
                     if (match === false) {
-                        reject(`ERROR: Incorrect password for user, '${userData.username}'.`);
+                        reject(`ERROR: Incorrect password for user '${userData.username}'.`);
                     } else if (res === true) {
                         if (users[0].loginHistory == null) {
                             users[0].loginHistory = [];
@@ -97,7 +103,7 @@ module.exports.checkUser = (userData) => {
                                 resolve(users[0]);
                             })
                             .catch((err) => {
-                                reject(`ERROR: There was a problem verifying the user: \n${err}`);
+                                reject(`ERROR: Could not verify user. The following error was returned: \n${err}`);
                             });
                     }
                 });
@@ -107,8 +113,6 @@ module.exports.checkUser = (userData) => {
         });
     });
 }
-
-
 
 
 
