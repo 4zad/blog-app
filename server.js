@@ -93,9 +93,8 @@ app.use((req, res, next) => {
     next();
 });
 
-// This is a helper middleware function that checks if a user is logged in
-// Can be used in any route that should be protected against unauthenticated access
-// A more advanced version of this would include checks for authorization as well, after checking if the user is authenticated
+// this is a helper middleware function that checks if a user is logged in and will be used in any route that should be protected against unauthenticated access
+// a more advanced version of this would include checks for authorization as well, after checking if the user is authenticated
 const ensureLogin = (req, res, next) => {
     if (!req.session.user) {
         res.redirect("/login");
@@ -107,17 +106,18 @@ const ensureLogin = (req, res, next) => {
 
 
 /* ----- SERVER ROUTES ----- */
-// setup a 'route' to listen on the default url path (http:/ / localhost/)
+// setup a 'route' to listen on the default/origin url path (http:/ / localhost/)
 app.get("/", (req, res) => {
     res.redirect("/blog");
 });
 
+// about page route
 app.get("/about", (req, res) => {
     res.render("about");
 });
 
+// blog page routes
 app.get('/blog', async (req, res) => {
-
     // Declare an object to store properties for the view
     let viewData = {};
 
@@ -166,7 +166,6 @@ app.get('/blog', async (req, res) => {
 });
 
 app.get('/blog/:id', async (req, res) => {
-
     // Declare an object to store properties for the view
     let viewData = {};
 
@@ -217,6 +216,7 @@ app.get('/blog/:id', async (req, res) => {
     });
 });
 
+// posts routes
 app.get("/posts", ensureLogin, (req, res) => {
     if (req.query.category) {
         blogData.getPostsByCategory(req.query.category).then((filteredPosts) => {
@@ -345,6 +345,7 @@ app.get("/posts/delete/:id", ensureLogin, (req, res) => {
     });
 });
 
+// post categories routes
 app.get("/categories", ensureLogin, (req, res) => {
     blogData.getCategories().then((categories) => {
         if (categories.length > 0) {
@@ -387,7 +388,57 @@ app.get("/categories/delete/:id", ensureLogin, (req, res) => {
     });
 });
 
+// user login routes
+app.post("/login", (req, res) => {
+    req.body.userAgent = req.get("User-Agent");
 
+    authData.checkUser(req.body).then((user) => {
+        req.session.user = {
+            username: user.username, // authenticated user's userName
+            email: user.email, // authenticated user's email
+            loginHistory: user.loginHistory // authenticated user's loginHistory
+        }
+        
+        res.redirect("/posts");
+    }).catch((err) => {
+        res.render("login", {
+            errorMessage: err,
+            username: req.body.username
+        });
+    });
+});
+
+app.get("/login", (req, res) => {
+    res.render("login");
+});
+
+// user registration routes
+app.post("/register", (req, res) => {
+    authData.registerUser(req.body).then((msg) => {
+        res.render("register", {
+            successMessage: msg
+        });
+    }).catch((err) => {
+        res.render("register", {
+            errorMessage: err,
+            username: req.body.username
+        });
+    });
+});
+
+app.get("/register", (req, res) => {
+    res.render("register");
+});
+
+// logs user out by destroying their session and redirects to the default/origin route
+app.get("/logout", (req, res) => {
+    req.session.reset();
+    res.redirect("/");
+});
+
+app.get("/userHistory", ensureLogin, (req, res) => {
+    res.render("user-history");
+});
 
 /* 
 This use() will not allow requests to go beyond it so we place it at the end of the file, after the other routes. This function will catch all other requests that don't match any other route handlers declared before it. This means we can use it as a sort of 'catch all' when no route match is found. We use this function to handle 404 requests to pages that are not found.
